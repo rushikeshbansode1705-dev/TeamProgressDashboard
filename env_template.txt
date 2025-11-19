@@ -1,0 +1,17 @@
+# Copy this file to .env and update with your values
+# On Windows: copy env_template.txt .env
+# On Linux/Mac: cp env_template.txt .env
+
+# Database Configuration
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=teamprogress
+
+# Flask Configuration
+SECRET_KEY=your-secret-key-change-in-production
+DATABASE_URL=mysql+pymysql://root:root@localhost/workflow_manager
+
+# Optional: SQLAlchemy Echo (for debugging SQL queries)
+SQLALCHEMY_ECHO=False
+
