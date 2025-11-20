@@ -18,8 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
   loadTasks();
   if (currentUserRole === "admin") {
     loadUsers();
+    loadAllUsers(); // Load all users for user management table
     setupTaskForm();
     setupEditForm();
+    setupUserForms();
   }
 });
 
@@ -234,14 +236,15 @@ function getStatusSelectClass(status) {
   return colors[status] || colors["Pending"];
 }
 
-// Load users (for admin)
+// Load users (for admin - developers only for task assignment dropdown)
 async function loadUsers() {
   try {
     const response = await fetch("/api/users");
     const data = await response.json();
 
     if (data.success) {
-      users = data.users;
+      // Filter to only developers for task assignment dropdown
+      users = data.users.filter((user) => user.role === "developer");
       populateUserSelects();
     }
   } catch (error) {
@@ -554,4 +557,234 @@ function escapeHtml(text) {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
+}
+
+// ==================== USER MANAGEMENT FUNCTIONS ====================
+
+let allUsers = [];
+
+// Load all users for user management table
+async function loadAllUsers() {
+  if (currentUserRole !== "admin") return;
+
+  try {
+    const response = await fetch("/api/users");
+    const data = await response.json();
+
+    if (data.success) {
+      allUsers = data.users;
+      renderUsersTable();
+    }
+  } catch (error) {
+    console.error("Error loading users:", error);
+  }
+}
+
+// Render users table
+function renderUsersTable() {
+  const tbody = document.getElementById("usersTableBody");
+  if (!tbody) return;
+
+  if (allUsers.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">No users found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = allUsers
+    .map((user) => {
+      const roleBadge =
+        user.role === "admin"
+          ? '<span class="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Admin</span>'
+          : '<span class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Developer</span>';
+
+      const createdDate = user.created_at ? formatDate(user.created_at) : "-";
+
+      return `
+      <tr>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#${
+          user.id
+        }</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${escapeHtml(
+          user.name
+        )}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${escapeHtml(
+          user.email
+        )}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm">${roleBadge}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${createdDate}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <button onclick="openEditUserModal(${
+            user.id
+          })" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+          <button onclick="deleteUser(${
+            user.id
+          })" class="text-red-600 hover:text-red-900">Delete</button>
+        </td>
+      </tr>
+    `;
+    })
+    .join("");
+}
+
+// Setup user forms
+function setupUserForms() {
+  // Add user form
+  const addUserForm = document.getElementById("addUserForm");
+  if (addUserForm) {
+    addUserForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const userData = {
+        name: document.getElementById("userName").value.trim(),
+        email: document.getElementById("userEmail").value.trim().toLowerCase(),
+        password: document.getElementById("userPassword").value,
+        role: document.getElementById("userRole").value,
+      };
+
+      const btn = document.getElementById("createUserBtn");
+      btn.disabled = true;
+      btn.textContent = "Creating...";
+
+      try {
+        const response = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          closeAddUserModal();
+          loadAllUsers();
+          loadUsers(); // Refresh developer list for task assignment
+          alert("User created successfully!");
+        } else {
+          alert("Error: " + data.message);
+        }
+      } catch (error) {
+        alert("An error occurred. Please try again.");
+        console.error(error);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Create User";
+      }
+    });
+  }
+
+  // Edit user form
+  const editUserForm = document.getElementById("editUserForm");
+  if (editUserForm) {
+    editUserForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const userId = document.getElementById("editUserId").value;
+      const userData = {
+        name: document.getElementById("editUserName").value.trim(),
+        email: document
+          .getElementById("editUserEmail")
+          .value.trim()
+          .toLowerCase(),
+        role: document.getElementById("editUserRole").value,
+      };
+
+      // Only include password if provided
+      const password = document.getElementById("editUserPassword").value;
+      if (password) {
+        userData.password = password;
+      }
+
+      const btn = document.getElementById("updateUserBtn");
+      btn.disabled = true;
+      btn.textContent = "Updating...";
+
+      try {
+        const response = await fetch(`/api/users/${userId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          closeEditUserModal();
+          loadAllUsers();
+          loadUsers(); // Refresh developer list for task assignment
+          alert("User updated successfully!");
+        } else {
+          alert("Error: " + data.message);
+        }
+      } catch (error) {
+        alert("An error occurred. Please try again.");
+        console.error(error);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Update";
+      }
+    });
+  }
+}
+
+// Open add user modal
+function openAddUserModal() {
+  document.getElementById("addUserForm").reset();
+  document.getElementById("addUserModal").classList.remove("hidden");
+}
+
+// Close add user modal
+function closeAddUserModal() {
+  document.getElementById("addUserModal").classList.add("hidden");
+  document.getElementById("addUserForm").reset();
+}
+
+// Open edit user modal
+function openEditUserModal(userId) {
+  const user = allUsers.find((u) => u.id === userId);
+  if (!user) return;
+
+  document.getElementById("editUserId").value = user.id;
+  document.getElementById("editUserName").value = user.name;
+  document.getElementById("editUserEmail").value = user.email;
+  document.getElementById("editUserRole").value = user.role;
+  document.getElementById("editUserPassword").value = "";
+
+  document.getElementById("editUserModal").classList.remove("hidden");
+}
+
+// Close edit user modal
+function closeEditUserModal() {
+  document.getElementById("editUserModal").classList.add("hidden");
+  document.getElementById("editUserForm").reset();
+}
+
+// Delete user
+async function deleteUser(userId) {
+  if (
+    !confirm(
+      "Are you sure you want to delete this user? This action cannot be undone."
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/users/${userId}`, {
+      method: "DELETE",
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      loadAllUsers();
+      loadUsers(); // Refresh developer list for task assignment
+      alert("User deleted successfully!");
+    } else {
+      alert("Error: " + data.message);
+    }
+  } catch (error) {
+    alert("An error occurred. Please try again.");
+    console.error(error);
+  }
 }

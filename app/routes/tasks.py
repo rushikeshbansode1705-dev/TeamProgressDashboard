@@ -10,9 +10,9 @@ from datetime import datetime, date
 tasks_bp = Blueprint('tasks', __name__)
 
 def require_admin():
-    # """Check if current user is admin"""
-    # if not current_user.is_authenticated or current_user.role != 'admin':
-    #     return jsonify({'success': False, 'message': 'Admin access required'}), 403
+    """Check if current user is admin"""
+    if not current_user.is_authenticated or current_user.role != 'admin':
+        return jsonify({'success': False, 'message': 'Admin access required'}), 403
     return None
 
 @tasks_bp.route('/tasks', methods=['GET'])
@@ -275,18 +275,6 @@ def add_comment(task_id):
         'comment': comment.to_dict()
     }), 201
 
-@tasks_bp.route('/users', methods=['GET'])
-@login_required
-def get_users():
-    """Get all users (for admin to assign tasks)"""
-    if current_user.role != 'admin':
-        return jsonify({'success': False, 'message': 'Admin access required'}), 403
-    
-    users = User.query.filter_by(role='developer').all()
-    return jsonify({
-        'success': True,
-        'users': [user.to_dict() for user in users]
-    })
 
 @tasks_bp.route('/dashboard/stats', methods=['GET'])
 @login_required
