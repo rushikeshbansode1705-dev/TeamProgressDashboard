@@ -10,12 +10,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='css/images/agri_favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="bg-gray-50">
     <!-- Header -->
     <header class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800" style="color: green;">Beejhealth WorkFlow Manager</h1>
+            <h1 class="text-2xl font-bold gradient-text">Beejhealth WorkFlow Manager</h1>
             <div class="flex items-center gap-4">
                 <span class="text-sm text-gray-600">
                     <span class="font-semibold">{{ user.name }}</span> 
@@ -28,7 +32,7 @@
         </div>
     </header>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style="padding-top: 2rem; padding-bottom: 2rem;">
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
             <div class="bg-white rounded-lg shadow p-6">
@@ -100,6 +104,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -112,7 +117,7 @@
                             </thead>
                             <tbody id="tasksTableBody" class="bg-white divide-y divide-gray-200">
                                 <tr>
-                                    <td colspan="{{ 8 if user.role == 'admin' else 7 }}" class="px-6 py-4 text-center text-gray-500">Loading tasks...</td>
+                                    <td colspan="{{ 9 if user.role == 'admin' else 8 }}" class="px-6 py-4 text-center text-gray-500">Loading tasks...</td>
                                 </tr>
                             </tbody>
                         </table>

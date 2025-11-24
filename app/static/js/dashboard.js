@@ -84,7 +84,7 @@ async function loadTasks() {
 // Render tasks table
 function renderTasks() {
   const tbody = document.getElementById("tasksTableBody");
-  const columnCount = currentUserRole === "admin" ? 8 : 7;
+  const columnCount = currentUserRole === "admin" ? 9 : 8;
 
   if (tasks.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${columnCount}" class="px-6 py-4 text-center text-gray-500">No tasks found</td></tr>`;
@@ -99,6 +99,24 @@ function renderTasks() {
 
       const priorityBadge = getPriorityBadge(task.priority);
       const statusBadge = getStatusBadge(task.status);
+
+      // Format description - truncate if too long
+      const description = task.description || "";
+      const maxLength = 100;
+      const truncatedDesc =
+        description.length > maxLength
+          ? description.substring(0, maxLength) + "..."
+          : description;
+      const descriptionCell =
+        description.length > maxLength
+          ? `<td class="px-6 py-4 text-sm text-gray-600 max-w-xs" title="${escapeHtml(
+              description
+            )}">
+             <div class="truncate">${escapeHtml(truncatedDesc)}</div>
+           </td>`
+          : `<td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+             ${escapeHtml(description || "-")}
+           </td>`;
 
       const actions =
         currentUserRole === "admin"
@@ -116,6 +134,7 @@ function renderTasks() {
                 <td class="px-6 py-4 text-sm text-gray-900">${escapeHtml(
                   task.title
                 )}</td>
+                ${descriptionCell}
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
                   task.assigned_to_name || "Unassigned"
                 }</td>
