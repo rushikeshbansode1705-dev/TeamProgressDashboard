@@ -25,7 +25,8 @@ def get_tasks():
     sort_by = request.args.get('sort_by', 'created_at')
     sort_dir = request.args.get('sort_dir', 'desc').lower()
     sort_dir = 'desc' if sort_dir not in ('asc', 'desc') else sort_dir
-
+    print("current_user.role", current_user.role);
+    print("current_user", current_user);
     query = Task.query
     if current_user.role != 'admin':
         query = query.filter_by(assigned_to=current_user.id)
