@@ -407,7 +407,7 @@ function setupTaskForm() {
       const data = await response.json();
 
       if (data.success) {
-        document.getElementById("taskForm").reset();
+        closeAddTaskModal();
         loadTasks();
         loadDashboardStats();
         alert("Task created successfully!");
@@ -472,6 +472,27 @@ function setupEditForm() {
         btn.textContent = "Update";
       }
     });
+}
+
+// Open add task modal
+function openAddTaskModal() {
+  document.getElementById("taskForm").reset();
+  // Reset form fields
+  document.getElementById("taskTitle").value = "";
+  document.getElementById("taskDescription").value = "";
+  document.getElementById("taskAssignedTo").value = "";
+  document.getElementById("taskPriority").value = "Medium";
+  document.getElementById("taskStatus").value = "Pending";
+  document.getElementById("taskStartDate").value = "";
+  document.getElementById("taskDueDate").value = "";
+
+  document.getElementById("addTaskModal").classList.remove("hidden");
+}
+
+// Close add task modal
+function closeAddTaskModal() {
+  document.getElementById("addTaskModal").classList.add("hidden");
+  document.getElementById("taskForm").reset();
 }
 
 // Open edit modal
